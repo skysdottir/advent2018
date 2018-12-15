@@ -5,8 +5,8 @@ import re
 def parse_min (line):
     "Does the thing"
     timestamp = time.strptime(line[1:17], "%Y-%m-%d %H:%M")
-    min = timestamp.minute
-    if (timestamp.hour == 23):
+    min = timestamp.tm_min
+    if (timestamp.tm_hour == 23):
         min = 0
     
     return min
@@ -43,13 +43,31 @@ for i in range(len(data)):
 #and some quick grepping shows that nobody falls asleep before midnight
 #and nothing happens after 1AM
 
-guards = defaultdict(set)
+guards = defaultdict(lambda :[0,0])
 
 for day in days:
     idline = day[0]
-    guardnum = int(re.search(r"\d+", idline[18:]))
+    guardnum = int(re.search(r"\d+", idline[18:]).group())
 
     for i, evt in enumerate(day, 1):
         last_event_min = parse_min(day[i-1])
         event_min = parse_min(evt)
-        
+
+        if evt.endswith("asleep"):
+            # means the guard fell asleep, and thus was awake. Add these minutes to awakeness
+            guards[guardnum][0] += (event_min - last_event_min)
+        else:
+            guards[guardnum][1] += (event_min - last_event_min)
+    
+# and now we've got a map of guardnum -> [minutes awake, minutes asleep]
+
+print(len(guards))
+
+sleepy = dict()
+
+for id, times in guards.items():
+    if times[0] + times[1] > 0:
+        sleepy[times[0]/(times[0]+times[1])] = id
+
+print("first: " + str(sorted(sleepy)[0]))
+print("last: " + str(sorted(sleepy)[len(sleepy)-1]))
