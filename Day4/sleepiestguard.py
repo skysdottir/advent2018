@@ -9,6 +9,8 @@ def parse_min (line):
     if (timestamp.tm_hour == 23):
         min = 0
     
+    # print("Parsed " + str(line) + " to minute " + str(min))
+
     return min
 
 with open("sortedinput.txt", "r") as input:
@@ -49,25 +51,34 @@ for day in days:
     idline = day[0]
     guardnum = int(re.search(r"\d+", idline[18:]).group())
 
-    for i, evt in enumerate(day, 1):
+    for i in range(1, len(day)):
+        print("line: " + day[i])
         last_event_min = parse_min(day[i-1])
-        event_min = parse_min(evt)
+        event_min = parse_min(day[i])
 
-        if evt.endswith("asleep"):
+        print("last_event_min: " + str(last_event_min))
+        print("event_min: " + str(event_min))
+
+        if day[i].endswith("asleep\n"):
             # means the guard fell asleep, and thus was awake. Add these minutes to awakeness
-            guards[guardnum][0] += (event_min - last_event_min)
+            print("Guard was awake for: " + str(event_min - last_event_min))
+            guards[guardnum][0] = (event_min - last_event_min)
         else:
-            guards[guardnum][1] += (event_min - last_event_min)
+            print("Guard was asleep for: " + str(event_min - last_event_min))
+            guards[guardnum][1] = (event_min - last_event_min)
     
 # and now we've got a map of guardnum -> [minutes awake, minutes asleep]
-
-print(len(guards))
 
 sleepy = dict()
 
 for id, times in guards.items():
+    # print("id: " + str(id))
+    # print("times: " + str(times))
+
     if times[0] + times[1] > 0:
         sleepy[times[0]/(times[0]+times[1])] = id
 
-print("first: " + str(sorted(sleepy)[0]))
-print("last: " + str(sorted(sleepy)[len(sleepy)-1]))
+for k in sorted(sleepy):
+    print("Guard: " + str(sleepy[k]) + " slept for: " + str(k))
+
+# Allll that to say that Guard #593 is sleeping 97% of the time. Whee!
