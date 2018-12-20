@@ -38,4 +38,12 @@ def reduce(polymer):
 
     return stack
 
-print(len(reduce(data)))
+# And the actual logic
+def remove(polymer, target):
+    tgt_lower = target.lower()
+    tgt_upper = target.upper()
+
+    return [i for i in polymer if (i != tgt_lower and i != tgt_upper)]
+
+for char in string.ascii_lowercase:
+    print("Without pair " + char + " : " + str(len(reduce(remove(data, char)))))
