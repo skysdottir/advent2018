@@ -2,6 +2,8 @@ from collections import defaultdict
 import time
 import re
 
+# Don't mind me, just bringing a lot of stuff across from sleepiestguard
+
 def parse_min (line):
     "Does the thing"
     timestamp = time.strptime(line[1:17], "%Y-%m-%d %H:%M")
@@ -62,10 +64,10 @@ for day in days:
         if day[i].endswith("asleep\n"):
             # means the guard fell asleep, and thus was awake. Add these minutes to awakeness
             print("Guard was awake for: " + str(event_min - last_event_min))
-            guards[guardnum][0] += (event_min - last_event_min)
+            guards[guardnum][0] = (event_min - last_event_min)
         else:
             print("Guard was asleep for: " + str(event_min - last_event_min))
-            guards[guardnum][1] += (event_min - last_event_min)
+            guards[guardnum][1] = (event_min - last_event_min)
     
 # and now we've got a map of guardnum -> [minutes awake, minutes asleep]
 
@@ -80,5 +82,3 @@ for id, times in guards.items():
 
 for k in sorted(sleepy):
     print("Guard: " + str(sleepy[k]) + " slept for: " + str(k))
-
-# Allll that to say that Guard #229 is sleeping 74% of the time. Whee!
