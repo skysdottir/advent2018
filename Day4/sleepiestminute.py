@@ -108,7 +108,7 @@ for guardnum in guard_ids:
             else:
                 mins_awake += 1
     
-    sleeprate = mins_asleep/(mins_asleep+mins_awake)
+    sleeprate = mins_asleep
 
     print("Guard " + str(guardnum) + " slept for " + str(sleeprate))
 
