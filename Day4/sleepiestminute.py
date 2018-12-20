@@ -89,15 +89,15 @@ for day in days:
     
 # and now we've got a map of guardnum:minute -> [awake, awake, asleep]
 # Where asleep is TRUE
-# Let's find the sleepiest guard...
+# Let's find the sleepiest guard/minute combo
 
-sleepiest_guard = [0,0]
+# This'll hold [guard ID, minute, sleeprate]
+sleepiest_guard = [0, 0, 0]
 
 for guardnum in guard_ids:
-    mins_asleep = 0
-    mins_awake = 0
-
     for min in range(0, 60):
+        mins_asleep = 0
+        mins_awake = 0
         guardmin = guards[str(guardnum) + ":" + str(min)]
         # This'll be a list of [awake, awake, asleep] for a single guard for a single minute
         # where asleep is TRUE
@@ -107,38 +107,18 @@ for guardnum in guard_ids:
                 mins_asleep += 1
             else:
                 mins_awake += 1
-    
-    sleeprate = mins_asleep
 
-    print("Guard " + str(guardnum) + " slept for " + str(sleeprate))
+        sleeprate = mins_asleep
 
-    if (sleeprate > sleepiest_guard[1]):
-        sleepiest_guard[0] = guardnum
-        sleepiest_guard[1] = sleeprate
+        print("Guard " + str(guardnum) + " on min " + str(min) + " slept for " + str(sleeprate))
 
-print("I believe the sleepiest guard to be " + str(sleepiest_guard[0]) + " who slept for " + str(sleepiest_guard[1]))
+        if (sleeprate > sleepiest_guard[2]):
+            sleepiest_guard[0] = guardnum
+            sleepiest_guard[1] = min
+            sleepiest_guard[2] = sleeprate
 
-# And now let's find the minute in which they were sleepiest
+print("I believe the sleepiest guard to be " + str(sleepiest_guard[0]) +
+         " who slept for " + str(sleepiest_guard[2]) +
+         " of minute " + str(sleepiest_guard[1]))
 
-sleepiest_minute = [0,0]
-
-for min in range(0, 60):
-    mins_asleep = 0
-    mins_awake = 0
-
-    for instance in guards[str(sleepiest_guard[0]) + ":" + str(min)]:
-        if (instance):
-            mins_asleep += 1
-        else:
-            mins_awake += 1
-
-    sleeprate = mins_asleep/(mins_asleep+mins_awake)
-    print("Guard was sleeping for " + str(sleeprate) + " of min " + str(min))
-
-    if (sleeprate > sleepiest_minute[1]):
-        sleepiest_minute[0] = min
-        sleepiest_minute[1] = sleeprate
-
-print("I believe the sleepiest minute to be " + str(sleepiest_minute[0]) + " at sleep rate " + str(sleepiest_minute[1]))
-
-print("Solution is: " + str(sleepiest_guard[0] * sleepiest_minute[0]))
+print("Solution: " + str(sleepiest_guard[0] * sleepiest_guard[1]))
