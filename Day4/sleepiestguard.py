@@ -82,3 +82,5 @@ for k in sorted(sleepy):
     print("Guard: " + str(sleepy[k]) + " slept for: " + str(k))
 
 # Allll that to say that Guard #229 is sleeping 74% of the time. Whee!
+# Ugh, or not, totally missed the last-event-to-1:00 slot.
+# Abandoning this in favor of sleepiestminute, which has more refactoring too

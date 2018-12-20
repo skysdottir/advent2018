@@ -27,8 +27,6 @@ with open("sortedinput.txt", "r") as input:
     #...thank goodness Python dates just handle dates in the 1500s.
     #... also what watcher was writing timestamps in parsable formats in the 1500s?
 
-    # We're gonna be silly and just get the sleepiest guard here
-
     data = input.readlines()
 
 days = list()
@@ -47,11 +45,21 @@ for i in range(len(data)):
 #and some quick grepping shows that nobody falls asleep before midnight
 #and nothing happens after 1AM
 
-guards = defaultdict(lambda :[0,0])
+guards = defaultdict(lambda :[])
+guard_ids = set()
+
+def addtime (guardnum, startmin, endmin, asleep) :
+    for min in range(startmin, endmin):
+        guards[str(guardnum) + ":" + str(min)].append(asleep)
+
 
 for day in days:
     idline = day[0]
     guardnum = int(re.search(r"\d+", idline[18:]).group())
+    guard_ids.add(guardnum)
+
+    last_event_min = 0
+    is_asleep = False
 
     for i in range(1, len(day)):
         print("line: " + day[i])
@@ -64,21 +72,65 @@ for day in days:
         if day[i].endswith("asleep\n"):
             # means the guard fell asleep, and thus was awake. Add these minutes to awakeness
             print("Guard was awake for: " + str(event_min - last_event_min))
-            guards[guardnum][0] = (event_min - last_event_min)
+            addtime(guardnum, last_event_min, event_min, False)
+            is_asleep = True
         else:
             print("Guard was asleep for: " + str(event_min - last_event_min))
-            guards[guardnum][1] = (event_min - last_event_min)
+            addtime(guardnum, last_event_min, event_min, True)
+            is_asleep = False
+
+    # And closing off until 1 AM
+    addtime (guardnum, last_event_min, 60, is_asleep)
     
-# and now we've got a map of guardnum -> [minutes awake, minutes asleep]
+# and now we've got a map of guardnum:minute -> [awake, awake, asleep]
+# Let's find the sleepiest guard...
 
-sleepy = dict()
+sleepiest_guard = [0,0]
 
-for id, times in guards.items():
-    # print("id: " + str(id))
-    # print("times: " + str(times))
+guard_sleeprate = defaultdict(lambda : [0,0])
 
-    if times[0] + times[1] > 0:
-        sleepy[times[0]/(times[0]+times[1])] = id
+for guardnum in guard_ids:
+    mins_asleep = 0
+    mins_awake = 0
 
-for k in sorted(sleepy):
-    print("Guard: " + str(sleepy[k]) + " slept for: " + str(k))
+    for min in range(0, 60):
+        for instance in guards[str(guardnum) + ":" + str(min)]:
+            if (instance):
+                mins_asleep += 1
+            else:
+                mins_awake += 1
+    
+    sleeprate = mins_asleep/(mins_asleep+mins_awake)
+
+    print("Guard " + str(guardnum) + " slept for " + str(sleeprate))
+
+    if (sleeprate > sleepiest_guard[1]):
+        sleepiest_guard[0] = guardnum
+        sleepiest_guard[1] = sleeprate
+
+print("I believe the sleepiest guard to be " + str(sleepiest_guard[0]) + " who slept for " + str(sleepiest_guard[1]))
+
+# And now let's find the minute in which they were sleepiest
+
+sleepiest_minute = [0,0]
+
+for min in range(0, 60):
+    mins_asleep = 0
+    mins_awake = 0
+
+    for instance in guards[str(sleepiest_guard[0]) + ":" + str(min)]:
+        if (instance):
+            mins_asleep += 1
+        else:
+            mins_awake += 1
+
+    sleeprate = mins_asleep/(mins_asleep+mins_awake)
+    print("Guard was sleeping for " + str(sleeprate) + " of min " + str(min))
+
+    if (sleeprate > sleepiest_minute[1]):
+        sleepiest_minute[0] = min
+        sleepiest_minute[1] = sleeprate
+
+print("I believe the sleepiest minute to be " + str(sleepiest_minute[0]) + " at sleep rate " + str(sleepiest_minute[1]))
+
+print("Solution is: " + str(sleepiest_guard[0] * sleepiest_minute[0]))
