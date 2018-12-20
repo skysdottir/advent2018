@@ -58,11 +58,13 @@ for day in days:
     guardnum = int(re.search(r"\d+", idline[18:]).group())
     guard_ids.add(guardnum)
 
+    print("\nNew day: " + idline[0:len(idline) - 1])
     last_event_min = 0
+    event_min = 0
     is_asleep = False
 
     for i in range(1, len(day)):
-        print("line: " + day[i])
+        print("line: " + day[i][0:len(day[i]) - 1])
         last_event_min = parse_min(day[i-1])
         event_min = parse_min(day[i])
 
@@ -80,7 +82,10 @@ for day in days:
             is_asleep = False
 
     # And closing off until 1 AM
-    addtime (guardnum, last_event_min, 60, is_asleep)
+    print("End of day")
+    print("Last event was at: " + str(event_min))
+    print("Guard was " + ("asleep" if is_asleep else "awake") + " for " + str(60 - event_min)) 
+    addtime (guardnum, event_min, 60, is_asleep)
     
 # and now we've got a map of guardnum:minute -> [awake, awake, asleep]
 # Let's find the sleepiest guard...
