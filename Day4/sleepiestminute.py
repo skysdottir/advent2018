@@ -84,22 +84,25 @@ for day in days:
     # And closing off until 1 AM
     print("End of day")
     print("Last event was at: " + str(event_min))
-    print("Guard was " + ("asleep" if is_asleep else "awake") + " for " + str(60 - event_min)) 
+    print("Guard was " + ("asleep" if is_asleep else "awake") + " for: " + str(60 - event_min)) 
     addtime (guardnum, event_min, 60, is_asleep)
     
 # and now we've got a map of guardnum:minute -> [awake, awake, asleep]
+# Where asleep is TRUE
 # Let's find the sleepiest guard...
 
 sleepiest_guard = [0,0]
-
-guard_sleeprate = defaultdict(lambda : [0,0])
 
 for guardnum in guard_ids:
     mins_asleep = 0
     mins_awake = 0
 
     for min in range(0, 60):
-        for instance in guards[str(guardnum) + ":" + str(min)]:
+        guardmin = guards[str(guardnum) + ":" + str(min)]
+        # This'll be a list of [awake, awake, asleep] for a single guard for a single minute
+        # where asleep is TRUE
+
+        for instance in guardmin:
             if (instance):
                 mins_asleep += 1
             else:
