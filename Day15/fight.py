@@ -3,17 +3,16 @@
 # because all selection happens in page order (left to right, top row first), that just means
 # we'll pick the lowest ID
 
-row_size = 32
-filename = "input.txt"
+row_size = 7
+filename = "example4.txt"
 
 # Initialize the board with closed space so extra volume just doesn't get used
 board=["#"] * row_size**2
-elves=dict()
-goblins=dict()
+elf_dps = 3
+elves = dict()
+goblins = dict()
 elf_count = 0
 round = 0
-elf_dps = 3
-max_dps = 4
 
 def id(x, y):
     return x + row_size*y
@@ -26,10 +25,12 @@ with open(filename, "r") as mapfile:
     file_lines = mapfile.readlines()
 
 def init():
-    global elves, goblins, round, elf_count
-    elves = dict()
-    goblins = dict()
+    global elf_count, round
+
+    elves.clear()
+    goblins.clear()
     round = 0
+
     for y, line in enumerate(file_lines):
         for x, char in enumerate(line):
             if char == "\n":
@@ -166,20 +167,20 @@ def select_target(id, is_elf):
 # Bug discovered in part 2: also need to remove the dead unit from the move order
 # to prevent phantom moves if someone else moves in on top of them
 def kill(id, is_elf):
-    # print("Killing unit at {}".format(coord(id)))
+    print("Killing unit at {}".format(coord(id)))
     pop = (elves if is_elf else goblins)
     pop.pop(id)
     board[id] = "."
 
 def attack(attacker_id, target_id, is_elf):
-    # print("{} attacking {}!".format(coord(attacker_id), coord(target_id)))
+    print("{} attacking {}!".format(coord(attacker_id), coord(target_id)))
     # sanity test
     assert board[attacker_id] == ("E" if is_elf else "G")
 
     foes = (goblins if is_elf else elves)
 
     # adjustable attack power for part 2
-    foes[target_id] -= ((elf_dps) if is_elf else 3)
+    foes[target_id] -= 3
     if foes[target_id] <= 0:
         kill(target_id, (not is_elf))
         return True
@@ -229,8 +230,10 @@ def tick():
     move_order.extend([(id, False) for id in goblins.keys()])
     move_order.sort(key=lambda pair:pair[0])
 
+    print("Round {} move order: {}".format(round, [coord(unit[0]) for unit in move_order]))
+
     for unit in move_order:
-        # print("Ticking unit at {}".format(coord(unit[0])))
+        print("Ticking unit at {}".format(coord(unit[0])))
         # zeroth, does this unit still exist?
         char = board[unit[0]]
         if char not in ["E", "G"]:
@@ -239,12 +242,15 @@ def tick():
 
         # first, are we done?
         if test_victory():
+            print("Unit {} declares victory!".format(coord(unit[0])))
             return False
 
         # second, do we need to move?
         loc = unit_move_phase(unit[0], unit[1])
         target = select_target(loc, unit[1])
 
+        # tricky bug here - this is in a for loop over move_order, we can't edit move_order
+        # Uuuugh I'm actually going to have to name my units, aren't I.
         if target != -1:
             killed = attack(loc, target, unit[1])
             if killed and (target, not unit[1]) in move_order:
@@ -268,14 +274,12 @@ def print_board():
 
 # spun through all the possibilities to find the win condition
 # seems to happen at elf_dps = 25
-while elf_dps < max_dps:
-    print("Running sim at elf_dps " + str(elf_dps))
-    init()
-    fight = True
-    while fight:
-        print_board()
-        fight = tick()
-        round += 1
+print("Running sim at elf_dps " + str(elf_dps))
+init()
+fight = True
+while fight:
+    print_board()
+    fight = tick()
+    round += 1
 
-    elf_dps += 1
-    # print_board()
+# print_board()
