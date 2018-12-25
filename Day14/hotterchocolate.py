@@ -4,24 +4,24 @@
 # it's just an optimization problem. I bet deque[i] is an o(n) function.
 # elf position is relative, which means I can bring in my dll code from good old marbles
 
+# ...and switch to 64-bit Python because I needed to go beyond 2 gigs of memory to solve it.
+# not by much, but I was a good 6m iterations short
+
 from collections import deque
 
 class Node:
-    """A doubly-linked list node. Starts in a loop with itself."""
+    """A singly-linked list node. Starts in a loop with itself."""
 
     def __init__(self, value):
         self.value = value
         self.right = self
-        self.left = self
     
     def insert_right(self, value):
         new = Node(value)
-
+        
         righter = self.right
-        new.left = self
         new.right = righter
         self.right = new
-        righter.left = new
 
 start = Node(3)
 start.insert_right(7)
