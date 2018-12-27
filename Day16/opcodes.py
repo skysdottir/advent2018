@@ -70,17 +70,24 @@ def parse_long(line):
     return [int(s) for s in line[9:-1].split(", ")]
 
 # and the test code for part 1
+# downloaded input_607.txt from the reddit: https://www.reddit.com/r/adventofcode/comments/a9rlgw/day_16_part_1_can_someone_validate_this_for_me/
+# Because I'm getting way too low of answers - 90 for mine and 161 for this one (should have been 607!)
+# ...am I misreading the question? I bet I'm misreading the question.
+#... I'm misreading the question. "three _or more_", not "three"
 def part_1(): 
 
     with open("input.txt", "r") as in_file:
         in_lines = in_file.readlines()
         threes_count = 0
+        sample_count = 0
 
         for sample in block_iter(in_lines, 4):
+            sample_count += 1
             print("Testing :" + str(sample))
-            if 3 == test_ops(parse_short(sample[1].strip()), parse_long(sample[0].strip()), parse_long(sample[2].strip())):
+            if 3 <= test_ops(parse_short(sample[1].strip()), parse_long(sample[0].strip()), parse_long(sample[2].strip())):
                 threes_count += 1
     print(threes_count)
+    print("{} lines cut into {} samples".format(len(in_lines), sample_count))
 
 part_1()
 
