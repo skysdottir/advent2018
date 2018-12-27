@@ -89,5 +89,76 @@ def part_1():
     print(threes_count)
     print("{} lines cut into {} samples".format(len(in_lines), sample_count))
 
-part_1()
+# and solve part 1
+# part_1()
 
+# Gotta track which op is which, and I'm not doing indexes -> names by hand.
+ops_and_names = [("addr", addr), ("addi", addi), ("mulr", mulr), \
+        ("muli", muli), ("banr", banr), ("bani", bani), ("borr", borr), \
+        ("bori", bori), ("setr", setr), ("seti", seti), ("gtir", gtir), \
+        ("gtri", gtri), ("gtrr", gtrr), ("eqir", eqir), ("eqri", eqri), ("eqrr", eqrr)]
+
+def possible_ops_for(i, reg, end_reg):
+    return {op[0] for op in ops_and_names if op[1](i, reg) == end_reg}
+
+def find_opcodes():
+    with open("input.txt", "r") as in_file:
+        in_lines = in_file.readlines()
+        opcode_possible_map = dict()
+
+        for sample in block_iter(in_lines, 4):
+            start_reg = parse_long(sample[0].strip())
+            instr = parse_short(sample[1].strip())
+            opcode = instr[0]
+            end_reg = parse_long(sample[2].strip())
+            
+            sample_opcodes = possible_ops_for(instr, start_reg, end_reg)
+
+            try:
+                opcode_possible_map[opcode] = opcode_possible_map[opcode] & sample_opcodes
+            except:
+                opcode_possible_map[opcode] = sample_opcodes
+
+    print("All possibilities: {}".format(opcode_possible_map))
+
+    # and round two - I'm just going to solve this sucker mechanically and brute-force.
+
+    certain_opcodes = []
+
+    for i in range(15):
+        single_options = [(k, v.pop()) for k, v in opcode_possible_map.items() if len(v) == 1]
+        for code in single_options:
+            del opcode_possible_map[code[0]]
+            certain_opcodes.append(code)
+            for k, v in opcode_possible_map.items():
+                if code[1] in v: v.remove(code[1])
+    
+    print(certain_opcodes)
+
+# and get opcodes -> names for part 2
+# find_opcodes()
+# All that to discover:
+# [(12, 'eqir'), (14, 'gtrr'), (4, 'gtri'), (7, 'eqri'), (9, 'eqrr'), (15, 'gtir'), 
+# (0, 'bani'), (11, 'setr'), (5, 'banr'), (8, 'seti'), (1, 'addr'), (2, 'mulr'), 
+# (13, 'muli'), (3, 'addi'), (10, 'bori'), (6, 'borr')]
+
+# and now lets actually solve this thing
+opcodes = {12: eqir, 14: gtrr, 4: gtri, 7: eqri, 9: eqrr, 15: gtir, \
+        0: bani, 11: setr, 5: banr, 8: seti, 1: addr, 2: mulr,  \
+        13: muli, 3: addi, 10: bori, 6: borr}
+
+def run_program():
+    with open("testprogram.txt", "r") as program:
+        reg = [0, 0, 0, 0]
+
+        for line in program:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            
+            instr = parse_short(line)
+            reg = opcodes[instr[0]](instr, reg)
+        
+        print(reg)
+
+run_program()
