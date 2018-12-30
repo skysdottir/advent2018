@@ -1,0 +1,83 @@
+Okay, starting my attack on part two in text form. I'm pretty sure I'm going to have to reverse-engineer the program.
+
+As part 1 ran, register 0 appeared to increase, in increments.
+ 3, 6, 10, 24, 36, 60, 103, 189, 318, 490, 1092, 1608, 2640
+
+ with each increase taking more and more time as the CPU thought.
+ Register 2 was a constant 1032, register 3 counted up slowly but consistently, 4 seemed to be a constant 0, and 1 and 5 changed rapidly, presumably the active registers of the program.
+
+ What the dickens is this thing actually doing?
+
+ Aha! Register 4 switched to 1 four instructions before end of program. That'll be significant.
+
+ The hot loop of the program looks to be insts [3:12], with most loops skipping inst. 7
+
+ So, the program goes:
+
+0) Jump to instr. 17
+1) Set [3] to 1
+2) set [1] to 1
+# hot loop starts here
+3) Multiply [3] and [1], store in [4]
+4) Check if [2] and [4] are equal, store in [4]
+5) Add [4] to the IP (skipping the next instruction, if [2] == [4] and we're coming from 4)
+6) Skip the next instruction (to increment)
+7) Add [3] to [0], store in [0]. Increases the solution!
+8) Increment [1]
+9) Check if [1] > [2], store in [4]
+10) Add [4] to the IP (skipping the next instruction if [1] > [2] and we're coming from 9)
+11) Set IP to 2, hard jump to instr. 3
+# usual end of hot loop
+12) Increment [3]
+13) check if [3] > [2], store in [4]
+14) add [4] to the IP (skipping the next instruction if [3] > [2] and we're coming from 13)
+15) Jump to 1
+16) square the instruction pointer, halting computation
+
+# and the startup code
+17) Add 2 to [2]
+18) square 2
+19) set [2] to [2]*IP (Should be 4*19 = 76)
+20) set [2] to [2]*11 (should be 76*11 = 836)
+21) Add 8 to [4]
+22) set [4] to [4]*IP (Should be 8*22 = 176)
+23) add 20 to [4] (should be 196)
+24) add [2] to [4], store in [2] (should be 1032)
+25) add [0] to IP (no-op, [0] = 0)
+26) Jump to 1
+
+# leaves us with start state [0, 1, 1032, 1, 196, 3] for first pass of 3 
+# I think that means the last 9 instructions are unused?
+
+# Ooooh! Not for part 2, where we start with [0] = 1. For part 2, we run the second part of the setup code as well.
+# which is probably going to make [2] much bigger
+
+# startup part 2:
+27) Set [4] to 27 (IP)
+28) Set [4] to [4]*IP (should be 27*28 = 756)
+29) Add the IP to [4] (should be 29 + 756 = 785)
+30) Set [4] to [4]*IP (should be 30*785 = 23550)
+31) Set [4] to [4]*14 (should be 23550*14 = 329700)
+32) Set [4] to [4]*IP (should be 329700*32 = 10550400)
+33) Set [2] to [2] + [4] (should be 1032 + bignum = 10551432)
+34) set [0] to 0
+35) Jump to 1
+
+# leaves us with new start state [0, 1, 10551432, 1, 10550400, 3] for the first pass of 3 for part 2
+
+So, what's the loop actually doing?
+
+(3-7):   if [3]*[1] == [2]: [0] += [3]
+(8):     [1] += 1
+(9-11):  if [1] <= [2]: jump to 3
+(12):    [3] += 1
+(13-15): if [3] <= [2]: jump to 3
+(16):    Halt!
+
+Or, more pythonically:
+
+for i in range(1, bignum+1):
+    for j in range(1, bignum+1):
+        if i * j == bignum: solution += i
+
+...so we're looking for the sum of all factors of bignum.
