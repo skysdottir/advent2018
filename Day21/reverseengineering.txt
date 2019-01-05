@@ -1,0 +1,14 @@
+Okay, what does this silly thing do?
+As documented, first the band function runs, correctly in my implementation.
+So, we won't fall into the obvious fail
+
+Steady registers seem to be [3] and [4] this time, with [0, IP, X, 65536, 16337778, 0]
+And a relatively quick iterator in [2]
+
+The only reference to [0] is in the last couple lines, where it sees if [0] == [4] and quits if true
+
+(1-5): Test to see if binary and works as expected, loop if not
+(6): clear [4]
+(7-13): Lots of math on [3] and [4]. (0, 0) -> (65536, 16337778)
+(14-17): if 256 > [3], jump to 27
+(18): restart the program
